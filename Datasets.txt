@@ -1,0 +1,13 @@
+hugging face dataset
+https://huggingface.co/datasets/Booking-com/multi-destination-trip-dataset
+https://huggingface.co/datasets/soniawmeyer/travel-conversations-finetuning
+https://huggingface.co/datasets/osunlp/TravelPlanner
+
+
+model use in hugging face to explore if thinks go south.
+https://huggingface.co/rahmanazhar/Travereel-Model-V1
+
+Kaggle dataset
+https://www.kaggle.com/datasets/amanmehra23/travel-recommendation-dataset
+https://www.kaggle.com/datasets/sanamps/tourpackageprediction
+https://www.kaggle.com/datasets/rkiattisak/traveler-trip-data
