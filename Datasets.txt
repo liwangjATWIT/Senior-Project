@@ -1,25 +1,20 @@
-hugging face dataset
-https://huggingface.co/datasets/Booking-com/multi-destination-trip-dataset
-https://huggingface.co/datasets/soniawmeyer/travel-conversations-finetuning
-https://huggingface.co/datasets/osunlp/TravelPlanner
+hugging face dataset 
+
+https://huggingface.co/datasets/osunlp/TravelPlanner 1
 
 
 model use in hugging face to explore if thinks go south.
 https://huggingface.co/rahmanazhar/Travereel-Model-V1
 
 Kaggle dataset
-https://www.kaggle.com/datasets/amanmehra23/travel-recommendation-dataset
-https://www.kaggle.com/datasets/sanamps/tourpackageprediction
-https://www.kaggle.com/datasets/rkiattisak/traveler-trip-data
 
-more data sets from hugging face 
-https://huggingface.co/datasets/Binaryy/reddit-travel-qa
-https://huggingface.co/datasets/argilla/tripadvisor-hotel-reviews
-https://huggingface.co/datasets/tppllm/nyc-taxi
-https://huggingface.co/datasets/Romz16/Mobility_Network_Data-Analysis
-https://huggingface.co/datasets/elisachen/uber-trips
-https://huggingface.co/datasets/soniawmeyer/travel-conversations-finetuning
-https://huggingface.co/datasets/JasleenSingh91/travel-QA
-huggingface.co/datasets/JasleenSingh91/travel-prompt-refined
-https://huggingface.co/datasets/Booking-com/multi-destination-trip-dataset
-https://huggingface.co/datasets/osunlp/TravelPlanner
+https://www.kaggle.com/datasets/rkiattisak/traveler-trip-data 1
+
+
+
+More datasets
+https://huggingface.co/datasets/Zuru7/European_Destination_For_Tour/blob/main/destinations.csv
+https://huggingface.co/datasets/qiqiuyi6/TravelPlanner_RL
+
+Test
+https://huggingface.co/datasets/qiqiuyi6/TravelPlanner_RL_test
