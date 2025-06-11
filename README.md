@@ -1,5 +1,5 @@
 
- 🌴 Vacation Genie – AI-Powered Multimodal Travel Planner
+ 🌴 Vacation Genie – AI-PoweredTravel Planner
 
 Vacation Genie is an AI-powered chatbot that generates personalized travel itineraries using text, image, and voice inputs. The chatbot integrates real-time weather data, local events, and user preferences to offer a seamless and intelligent vacation planning experience.
 
