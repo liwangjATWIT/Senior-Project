@@ -1,6 +1,105 @@
-{% extends "base.html"%} 
+{% extends "base.html" %}
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h1>This is the Home page</h1>
+<div class="custom-content">
+
+  <!-- Message Box -->
+  <div class="messageBox">
+    <div class="fileUploadWrapper">
+      <label for="file">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 337 337" width="24" height="24">
+          <circle stroke-width="20" stroke="#6c6c6c" fill="none" r="158.5" cy="168.5" cx="168.5"></circle>
+          <path stroke-linecap="round" stroke-width="25" stroke="#6c6c6c" d="M167.759 79V259"></path>
+          <path stroke-linecap="round" stroke-width="25" stroke="#6c6c6c" d="M79 167.138H259"></path>
+        </svg>
+        <span class="tooltip">Add an image</span>
+      </label>
+      <input type="file" id="file" name="file" />
+    </div>
+
+    <input required placeholder="Type your message here..." type="text" id="messageInput" />
+
+    <!-- Send Button with Text -->
+    <button id="sendButton" class="btn btn-primary d-flex align-items-center gap-1">
+      <span>Send</span>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 664 663" width="20" height="20">
+        <path stroke-linejoin="round" stroke-linecap="round" stroke-width="33.67" stroke="#ffffff"
+          d="M646.293 331.888L17.7538 17.6187L155.245 331.888M646.293 331.888L17.753 646.157L155.245 331.888M646.293 331.888L318.735 330.228L155.245 331.888" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<style>
+  .custom-content {
+    position: relative;
+    height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  .messageBox {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 900px;
+    background-color: #f0f0f0;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+  }
+
+  .fileUploadWrapper {
+    position: relative;
+  }
+
+  .fileUploadWrapper input[type="file"] {
+    display: none;
+  }
+
+  .fileUploadWrapper label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .tooltip {
+    font-size: 12px;
+    margin-left: 6px;
+    color: #6c6c6c;
+  }
+
+  #messageInput {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 16px;
+    outline: none;
+  }
+
+  #sendButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  #sendButton:hover {
+    background-color: #0056b3;
+  }
+</style>
 {% endblock %}

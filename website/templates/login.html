@@ -2,17 +2,49 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<form method="POST">
-    <h3 align="center">Login</h3>
-    <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
-    </div>
-    <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
-    </div>
-    <br />
-    <button type="submit" class="btn btn-primary">Login</button>
-</form>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<div class="flex justify-center items-center min-h-screen bg-gray-100 py-12">
+  <div class="bg-white shadow-lg rounded-lg p-10 w-full max-w-md">
+    <h2 class="text-4xl font-bold text-center mb-6 text-gray-800">Log in</h2>
+
+    <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-6">
+      <div>
+        <label for="email" class="block text-gray-700 mb-1">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="Email"
+          required
+          class="w-full border p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label for="password" class="block text-gray-700 mb-1">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Password"
+          required
+          class="w-full border p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div class="flex justify-between text-sm">
+        <a href="#" class="text-blue-600 hover:underline">Forgot password?</a>
+        <a href="{{ url_for('auth.sign_up') }}" class="text-blue-600 hover:underline">Sign Up</a>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-blue-400 hover:bg-blue-500 text-white py-2 rounded-lg shadow-md transition"
+      >
+        Log In
+      </button>
+    </form>
+  </div>
+</div>
 {% endblock %}

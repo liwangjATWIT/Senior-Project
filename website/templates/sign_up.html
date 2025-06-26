@@ -2,29 +2,112 @@
 {% block title %}Sign Up{% endblock %}
 
 {% block content %}
-<form method="POST">
-    <h3 align="center">Sign Up</h3>
-    <div class="form-group">
-        <label for="email">Email Address*</label>
-        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+<style>
+.form {
+  max-width: 400px;
+  margin: 50px auto;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.message {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+.flex {
+  display: flex;
+  gap: 10px;
+}
+.input {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+  margin-top: 5px;
+}
+label {
+  display: block;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #333;
+}
+label span {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #888;
+}
+.submit {
+  background-color: #60A5FA;
+  color: #fff;
+  border: none;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+.submit:hover {
+  background-color: #3B82F6;
+}
+.signin {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 15px;
+}
+.signin a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+.signin a:hover {
+  text-decoration: underline;
+}
+</style>
+
+<form method="POST" class="form">
+    <p class="title">Create Account</p>
+    <p class="message">Sign Up to get started with Vacation Genie AI Chatbot.</p>
+
+    <div class="flex">
+        <label>
+            <input name="firstName" required type="text" class="input">
+            <span>First Name*</span>
+        </label>
+
+        <label>
+            <input name="lastName" required type="text" class="input">
+            <span>Last Name*</span>
+        </label>
     </div>
-    <div class="form-group">
-        <label for="firstName">First Name*</label>
-        <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Enter first name" required>
-    </div>
-    <div class="form-group">
-        <label for="lastName">Last Name*</label>
-        <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Enter first name" required>
-    </div>
-    <div class="form-group">
-        <label for="password1">Password*</label>
-        <input type="password" class="form-control" id="password1" name="password1" placeholder="Enter password" required>
-    </div>
-    <div class="form-group">
-        <label for="password2">Password Confirmation*</label>
-        <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm password" required>
-    </div>
-    <br />
-    <button type="submit" class="btn btn-primary">Submit</button>
+
+    <label>
+        <input name="email" required type="email" class="input">
+        <span>Email*</span>
+    </label>
+
+    <label>
+        <input name="password1" required type="password" class="input">
+        <span>Password*</span>
+    </label>
+
+    <label>
+        <input name="password2" required type="password" class="input">
+        <span>Confirm password*</span>
+    </label>
+
+    <button type="submit" class="submit">Submit</button>
+
+    <p class="signin">Already have an account? <a href="{{ url_for('auth.login') }}">Log In</a></p>
 </form>
 {% endblock %}
