@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% block title %}Vacation Genie - Plan Your Perfect Trip{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<div class="min-h-screen bg-gray-100 py-12">
+  <div class="container mx-auto px-4">
+    
+    <!-- Main Planning Card -->
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white shadow-lg rounded-lg p-8 mb-8">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold text-gray-800 mb-2">🌴 Vacation Genie</h1>
+          <p class="text-gray-600 text-lg">Your AI-powered travel companion for the perfect getaway</p>
+        </div>
+
+        <!-- Trip Planning Prompt -->
+        <div class="bg-blue-50 rounded-lg p-6 mb-6">
+          <form id="travelSearchForm" method="POST" action="/home">
+            <div class="text-lg leading-relaxed text-gray-700">
+              <span>I'm planning a trip from </span>
+              
+              <!-- Origin Input -->
+              <div class="inline-block relative">
+                <input type="text" id="origin" name="origin" 
+                       class="inline-input" 
+                       placeholder="city" 
+                       autocomplete="off" 
+                       required 
+                       value="{{ origin or '' }}">
+                <div class="autocomplete-dropdown" id="originDropdown"></div>
+              </div>
+              
+              <span> to </span>
+              
+              <!-- Destination Input -->
+              <div class="inline-block relative">
+                <input type="text" id="destination" name="destination" 
+                       class="inline-input" 
+                       placeholder="destination" 
+                       autocomplete="off" 
+                       required
+                       value="{{ destination or '' }}">
+                <div class="autocomplete-dropdown" id="destinationDropdown"></div>
+              </div>
+              
+              <span>, departing on </span>
+              
+              <!-- Departure Date -->
+              <input type="date" id="departureDate" name="departureDate" 
+                     class="inline-input date-input" 
+                     required
+                     value="{{ departure_date or '' }}">
+              
+              <span> and returning on </span>
+              
+              <!-- Return Date -->
+              <input type="date" id="returnDate" name="returnDate" 
+                     class="inline-input date-input" 
+                     required
+                     value="{{ return_date or '' }}">
+              
+              <span>. Please generate a daily itinerary for my trip.</span>
+            </div>
+            
+            <!-- Generate Button -->
+            <div class="text-center mt-6">
+              <button type="submit" class="bg-blue-400 hover:bg-blue-500 text-white px-8 py-3 rounded-lg shadow-md transition font-semibold">
+                Generate My Itinerary
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    {% if itinerary %}
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white shadow-lg rounded-lg p-8">
+        <div class="text-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">✈️ Your Perfect Itinerary</h2>
+          <p class="text-gray-600">Here's your personalized travel plan</p>
+        </div>
+
+        <!-- Timeline Container -->
+        <div class="space-y-6" id="timelineContainer">
+          {% for item in itinerary %}
+          <div class="bg-gray-50 rounded-lg p-6 border-l-4 border-blue-400">
+            <div class="flex items-start">
+              <div class="flex-shrink-0 w-12 h-12 bg-blue-400 text-white rounded-full flex items-center justify-center font-bold mr-4">
+                {{ loop.index }}
+              </div>
+              <div class="flex-grow">
+                <h3 class="text-xl font-semibold text-gray-800 mb-1">{{ item.day }}</h3>
+                <p class="text-sm text-gray-500 mb-2">{{ item.date }}</p>
+                <p class="text-gray-700 leading-relaxed">{{ item.activities }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Loading State -->
+    <div class="loading-section" id="loadingSection" style="display: none;">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+        <p class="mt-3 text-gray-600">Creating your perfect itinerary...</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  .inline-input {
+    display: inline-block;
+    border: 2px solid #60A5FA;
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin: 0 2px;
+    background: white;
+    font-weight: 600;
+    color: #1F2937;
+    min-width: 120px;
+    transition: all 0.2s ease;
+  }
+  
+  .inline-input:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: #F8FAFC;
+  }
+  
+  .inline-input::placeholder {
+    color: #9CA3AF;
+    font-weight: normal;
+  }
+  
+  .date-input {
+    min-width: 140px;
+  }
+  
+  .autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #D1D5DB;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #F3F4F6;
+    transition: background-color 0.2s ease;
+  }
+
+  .autocomplete-item:hover,
+  .autocomplete-item.active {
+    background-color: #F8FAFC;
+  }
+
+  .autocomplete-item:last-child {
+    border-bottom: none;
+  }
+</style>
+
+<script>
+// Popular cities for autocomplete
+const cities = [
+  'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Phoenix, AZ',
+  'Philadelphia, PA', 'San Antonio, TX', 'San Diego, CA', 'Dallas, TX', 'San Jose, CA',
+  'Austin, TX', 'Jacksonville, FL', 'Fort Worth, TX', 'Columbus, OH', 'Charlotte, NC',
+  'San Francisco, CA', 'Indianapolis, IN', 'Seattle, WA', 'Denver, CO', 'Washington, DC',
+  'Boston, MA', 'El Paso, TX', 'Nashville, TN', 'Detroit, MI', 'Oklahoma City, OK',
+  'Portland, OR', 'Las Vegas, NV', 'Memphis, TN', 'Louisville, KY', 'Baltimore, MD',
+  'Milwaukee, WI', 'Albuquerque, NM', 'Tucson, AZ', 'Fresno, CA', 'Mesa, AZ',
+  'Sacramento, CA', 'Atlanta, GA', 'Kansas City, MO', 'Colorado Springs, CO', 'Miami, FL',
+  'Raleigh, NC', 'Omaha, NE', 'Long Beach, CA', 'Virginia Beach, VA', 'Oakland, CA',
+  // International destinations
+  'London, UK', 'Paris, France', 'Tokyo, Japan', 'Sydney, Australia', 'Rome, Italy',
+  'Barcelona, Spain', 'Amsterdam, Netherlands', 'Berlin, Germany', 'Vienna, Austria',
+  'Prague, Czech Republic', 'Budapest, Hungary', 'Istanbul, Turkey', 'Athens, Greece',
+  'Lisbon, Portugal', 'Copenhagen, Denmark', 'Stockholm, Sweden', 'Oslo, Norway',
+  'Dublin, Ireland', 'Edinburgh, Scotland', 'Zurich, Switzerland'
+];
+
+// Autocomplete functionality
+function setupAutocomplete(inputId, dropdownId) {
+  const input = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropdownId);
+  
+  input.addEventListener('input', function() {
+    const value = this.value.toLowerCase();
+    const filtered = cities.filter(city => 
+      city.toLowerCase().includes(value)
+    ).slice(0, 8);
+    
+    if (value.length > 0 && filtered.length > 0) {
+      dropdown.innerHTML = filtered.map(city => 
+        `<div class="autocomplete-item" onclick="selectCity('${inputId}', '${city}')">${city}</div>`
+      ).join('');
+      dropdown.style.display = 'block';
+    } else {
+      dropdown.style.display = 'none';
+    }
+  });
+  
+  // Hide dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+}
+
+function selectCity(inputId, city) {
+  document.getElementById(inputId).value = city;
+  document.getElementById(inputId.replace(/^(\w+)/, '$1Dropdown')).style.display = 'none';
+}
+
+// Initialize autocomplete for both inputs
+setupAutocomplete('origin', 'originDropdown');
+setupAutocomplete('destination', 'destinationDropdown');
+
+// Set minimum date to today
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('departureDate').min = new Date().toISOString().split('T')[0];
+document.getElementById('returnDate').min = new Date().toISOString().split('T')[0];
+
+document.getElementById('departureDate').addEventListener('change', function () {
+  document.getElementById('returnDate').min = this.value;
+});
+
+document.getElementById('travelSearchForm').addEventListener('submit', function (e) {
+  const origin = document.getElementById('origin').value.trim();
+  const destination = document.getElementById('destination').value.trim();
+  const departureDate = document.getElementById('departureDate').value;
+  const returnDate = document.getElementById('returnDate').value;
+
+  if (!origin || !destination || !departureDate || !returnDate) {
+    e.preventDefault(); // Prevent form submission
+    alert("Please fill in all fields before generating your itinerary.");
+    return;
+  }
+
+  // Optional: extra check to ensure return date is after departure
+  if (returnDate < departureDate) {
+    e.preventDefault();
+    alert("Return date cannot be before departure date.");
+    return;
+  }
+
+  // Show loading animation while the form submits
+  document.getElementById('loadingSection').style.display = 'block';
+});
+</script>
+{% endblock %}

@@ -1,4 +1,4 @@
-from flask import Blueprint as bl, render_template, request, flash
+from flask import Blueprint as bl, render_template, request, flash, redirect, url_for, session
 
 auth = bl('auth', __name__)
 
@@ -7,16 +7,18 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        # Validate credentials (e.g., against a database)
         if email == "admin@example.com" and password == "password":
+            session['user'] = email
             flash("Login successful!", category="success")
-            return render_template("home.html")  # Or redirect to /home
+            return redirect(url_for('dashboard'))
         else:
             flash("Invalid email or password.", category="error")
     return render_template("login.html")
 
 @auth.route('/logout')
 def logout():
+    session.pop('user', None)
+    flash("You have been logged out.", category="success")
     return render_template("logout.html")
 
 @auth.route('/sign-up', methods=['GET', 'POST'])
@@ -42,3 +44,22 @@ def sign_up():
             flash('Account created!', category='success')
 
     return render_template("sign_up.html")
+
+@auth.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        # Simulated password reset logic
+        if email == "admin@example.com":
+            flash("Reset link sent to your email.", category="success")
+        else:
+            flash("If that email is registered, a reset link will be sent.", category="success")
+        return render_template("login.html")  # or redirect to login
+    return render_template("forgot_password.html")
+
+@auth.route('/dashboard')
+def dashboard():
+    if not session.get('user'):
+        flash("Please log in to view the dashboard.", category="error")
+        return redirect(url_for('auth.login'))
+    return render_template("dashboard.html")

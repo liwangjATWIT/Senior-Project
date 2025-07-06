@@ -18,19 +18,36 @@
     </head>
     <body>
       
-      <nav class="navbar navbar-expend-lg navbar-dark bg-dark">
-       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
-        <span class="navbar-toggler-icon"></span>
-       </button>
-       <div class="collapse navbar-collapse" id="navbar">
-        <div class="navbar-nav">
-          <a class="nav-item nav-link" id="login" href="/login">Login</a>
-          <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
-          <a class="nav-item nav-link" id="home" href="/">Home</a>
-          <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">Vacation Genie</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar">
+          <div class="navbar-nav ml-auto">
+            {% if session.get('user') %}
+              <a class="nav-item nav-link" href="{{ url_for('views.home') }}">Home</a>
+              <a class="nav-item nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a>
+              <a class="nav-item nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
+            {% else %}
+              <a class="nav-item nav-link" href="{{ url_for('auth.login') }}">Log In</a>
+              <a class="nav-item nav-link" href="{{ url_for('auth.sign_up') }}">Sign Up</a>
+            {% endif %}
+          </div>
         </div>
-       </div>
       </nav>
+
+      {% if session.get('user') %}
+        <div class="container mt-3">
+          <h1>Welcome, {{ session['user'] }}!</h1>
+        </div>
+      {% else %}
+        <div class="container mt-3">
+          <h1>Welcome to Vacation Genie!</h1>
+          <p>Please log in or sign up to continue.</p>
+        </div>
+      {% endif %}
 
       {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}

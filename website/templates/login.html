@@ -34,7 +34,7 @@
       </div>
 
       <div class="flex justify-between text-sm">
-        <a href="#" class="text-blue-600 hover:underline">Forgot password?</a>
+        <a href="{{ url_for('auth.forgot_password') }}" class="text-blue-600 hover:underline">Forgot password?</a>
         <a href="{{ url_for('auth.sign_up') }}" class="text-blue-600 hover:underline">Sign Up</a>
       </div>
 
