@@ -77,6 +77,20 @@
     </div>
   </div>
 
+  <!-- Itinerary Section -->
+<section class="itinerary-section" style="padding: 20px;">
+  <h2>Your Itinerary</h2>
+  {% if itinerary %}
+    <ul>
+      {% for item in itinerary %}
+        <li><strong>{{ item.day }} ({{ item.date }}):</strong> {{ item.activities }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No itinerary found. Please generate one from your dashboard.</p>
+  {% endif %}
+</section>
+
   <!-- Message Box -->
   <div class="messageBox">
     <div class="fileUploadWrapper">

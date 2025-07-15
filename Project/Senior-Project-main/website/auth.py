@@ -1,6 +1,6 @@
 from flask import Blueprint as bl, render_template, request, flash, redirect, url_for, session
 from .models import User, db
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 
 auth = bl('auth', __name__)
@@ -16,6 +16,22 @@ def sanitize_input(input_string):
         return ""
     return input_string.strip()
 
+def generate_itinerary(origin, destination, departure_date, return_date):
+    start = datetime.strptime(departure_date, "%Y-%m-%d")
+    end = datetime.strptime(return_date, "%Y-%m-%d")
+    num_days = (end - start).days + 1
+
+    itinerary = []
+    for i in range(num_days):
+        day_date = start + timedelta(days=i)
+        itinerary.append({
+            'day': f'Day {i+1}',
+            'date': day_date.strftime('%A, %B %d, %Y'),
+            'activities': f"Explore {destination}, visit local attractions, and enjoy the culture."
+        })
+
+    return itinerary
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -30,19 +46,18 @@ def login():
             flash("Please enter a valid email address.", category="error")
             return render_template("login.html")
         
-        # Check if user exists in database
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
             session['user'] = email
             session['user_id'] = user.id
-            # Update last login
             user.last_login = datetime.utcnow()
             db.session.commit()
             flash("Login successful!", category="success")
             return redirect(url_for('auth.dashboard'))
         else:
             flash("Invalid email or password.", category="error")
-    
+            return render_template("login.html")
+
     return render_template("login.html")
 
 @auth.route('/logout')
@@ -124,18 +139,44 @@ def forgot_password():
     
     return render_template("forgot_password.html")
 
-@auth.route('/dashboard')
+@auth.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     if not session.get('user'):
         flash("Please log in to view the dashboard.", category="error")
         return redirect(url_for('auth.login'))
-    
-    # Get user information from database
+
     user = User.query.filter_by(email=session['user']).first()
     if not user:
         flash("User not found. Please log in again.", category="error")
         session.pop('user', None)
         session.pop('user_id', None)
         return redirect(url_for('auth.login'))
-    
+
+    if request.method == 'POST':
+        origin = request.form.get('origin')
+        destination = request.form.get('destination')
+        departure_date = request.form.get('departureDate')
+        return_date = request.form.get('returnDate')
+
+        if origin and destination and departure_date and return_date:
+            try:
+                itinerary = generate_itinerary(origin, destination, departure_date, return_date)
+                session['itinerary'] = itinerary  # SAVE itinerary in session here
+                flash("Itinerary generated successfully!", category="success")
+                return redirect(url_for('views.home'))
+            except Exception as e:
+                flash("Failed to generate itinerary. Please check your input.", category="error")
+        else:
+            flash("All fields are required to generate your itinerary.", category="error")
+
     return render_template("dashboard.html", user=user)
+
+@auth.route('/home')
+def home():
+    # Check if user is logged in
+    user = session.get('user')
+    if not user:
+        return redirect(url_for('views.home'))  # Redirect to public home if not logged in
+
+    # Pass user data to template if needed
+    return render_template('auth_home.html', user=user)

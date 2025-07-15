@@ -19,7 +19,7 @@
 
         <!-- Trip Planning Prompt -->
         <div class="bg-blue-50 rounded-lg p-6 mb-6">
-          <form id="travelSearchForm" method="POST" action="/home">
+          <form id="travelSearchForm" method="POST" action="{{ url_for('auth.dashboard') }}">
             <div class="text-lg leading-relaxed text-gray-700">
               <span>I'm planning a trip from </span>
               
