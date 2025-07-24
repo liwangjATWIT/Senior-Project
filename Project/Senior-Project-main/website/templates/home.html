@@ -79,17 +79,18 @@
 
   <!-- Itinerary Section -->
 <section class="itinerary-section" style="padding: 20px;">
-  <h2>Your Itinerary</h2>
   {% if itinerary %}
+    <h2>Your Itinerary</h2>
     <ul>
-      {% for item in itinerary %}
-        <li><strong>{{ item.day }} ({{ item.date }}):</strong> {{ item.activities }}</li>
+      {% for block in itinerary %}
+        <li>{{ block }}</li>
       {% endfor %}
     </ul>
   {% else %}
-    <p>No itinerary found. Please generate one from your dashboard.</p>
+    <p>No itinerary available. Use the form to generate one!</p>
   {% endif %}
 </section>
+
 
   <!-- Message Box -->
   <div class="messageBox">

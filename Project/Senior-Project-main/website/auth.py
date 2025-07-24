@@ -1,36 +1,75 @@
 from flask import Blueprint as bl, render_template, request, flash, redirect, url_for, session
 from .models import User, db
-from datetime import datetime, timedelta
+from datetime import datetime
 import re
+# from transformers import AutoTokenizer, AutoModelForCausalLM  # type: ignore
+# import torch  # type: ignore
+import requests
 
 auth = bl('auth', __name__)
 
+# # Load GPT-2 model and tokenizer once at server start
+# tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
+# model = AutoModelForCausalLM.from_pretrained("openai-community/gpt2")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# model.to(device)
+# model.eval()
+
 def validate_email(email):
-    """Validate email format"""
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
 def sanitize_input(input_string):
-    """Basic input sanitization"""
-    if not input_string:
-        return ""
-    return input_string.strip()
+    return input_string.strip() if input_string else ""
+
+
+
+COLAB_API_URL = "https://your-ngrok-url.ngrok-free.app/generate"  # <-- replace with actual URL
 
 def generate_itinerary(origin, destination, departure_date, return_date):
-    start = datetime.strptime(departure_date, "%Y-%m-%d")
-    end = datetime.strptime(return_date, "%Y-%m-%d")
-    num_days = (end - start).days + 1
+    # Calculate number of days
+    from datetime import datetime
+    fmt = "%Y-%m-%d"
+    try:
+        days = (datetime.strptime(return_date, fmt) - datetime.strptime(departure_date, fmt)).days + 1
+        if days <= 0:
+            raise ValueError("Return date must be after departure date")
+    except Exception as e:
+        return [{
+            'day': 'Error',
+            'date': '',
+            'activities': f'Invalid date input: {e}'
+        }]
 
-    itinerary = []
-    for i in range(num_days):
-        day_date = start + timedelta(days=i)
-        itinerary.append({
-            'day': f'Day {i+1}',
-            'date': day_date.strftime('%A, %B %d, %Y'),
-            'activities': f"Explore {destination}, visit local attractions, and enjoy the culture."
-        })
+    payload = {
+        "origin": origin,
+        "destination": destination,
+        "start_date": departure_date,
+        "end_date": return_date,
+        "days": days
+    }
 
-    return itinerary
+    try:
+        response = requests.post(COLAB_API_URL, json=payload)
+        response.raise_for_status()
+        result = response.json()
+
+        if "itinerary" in result:
+            raw = result["itinerary"]
+            # Split by days for your UI
+            itinerary = [{"day": f"Day {i+1}", "date": "", "activities": day.strip()} 
+                         for i, day in enumerate(raw.split("\n\n")) if day.strip()]
+            return itinerary
+
+        return [{"day": "Error", "date": "", "activities": "Unexpected response format"}]
+
+    except Exception as e:
+        return [{
+            'day': 'Error',
+            'date': '',
+            'activities': f"Failed to generate itinerary: {e}"
+        }]
+
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -76,7 +115,6 @@ def sign_up():
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
 
-        # Validation
         if not email or not firstName or not lastName or not password1 or not password2:
             flash('Please fill in all fields.', category='error')
         elif len(email) < 4:
@@ -92,12 +130,10 @@ def sign_up():
         elif len(password1) < 12:
             flash('Password must be at least 12 characters.', category='error')
         else:
-            # Check if user already exists
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 flash('An account with this email already exists.', category='error')
             else:
-                # Create new user
                 try:
                     new_user = User(
                         email=email,
@@ -130,10 +166,7 @@ def forgot_password():
             flash("Please enter a valid email address.", category="error")
             return render_template("forgot_password.html")
         
-        # Check if user exists (but don't reveal if they don't for security)
         user = User.query.filter_by(email=email).first()
-        
-        # Always show success message for security (prevents email enumeration)
         flash("If that email is registered, a reset link will be sent.", category="success")
         return redirect(url_for('auth.login'))
     
@@ -159,13 +192,10 @@ def dashboard():
         return_date = request.form.get('returnDate')
 
         if origin and destination and departure_date and return_date:
-            try:
-                itinerary = generate_itinerary(origin, destination, departure_date, return_date)
-                session['itinerary'] = itinerary  # SAVE itinerary in session here
-                flash("Itinerary generated successfully!", category="success")
-                return redirect(url_for('views.home'))
-            except Exception as e:
-                flash("Failed to generate itinerary. Please check your input.", category="error")
+            itinerary = generate_itinerary(origin, destination, departure_date, return_date)
+            session['itinerary'] = itinerary
+            flash("Itinerary generated successfully!", category="success")
+            return redirect(url_for('views.home'))
         else:
             flash("All fields are required to generate your itinerary.", category="error")
 
@@ -173,10 +203,8 @@ def dashboard():
 
 @auth.route('/home')
 def home():
-    # Check if user is logged in
     user = session.get('user')
     if not user:
-        return redirect(url_for('views.home'))  # Redirect to public home if not logged in
+        return redirect(url_for('views.home'))
 
-    # Pass user data to template if needed
     return render_template('auth_home.html', user=user)
