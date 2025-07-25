@@ -7,9 +7,10 @@ import torch  # type: ignore
 
 auth = bl('auth', __name__)
 
-tokenizer = AutoTokenizer.from_pretrained("unsloth/Llama-3.2-3B-Instruct")
+tokenizer = AutoTokenizer.from_pretrained("unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit")
+# model = AutoModelForCausalLM.from_pretrained("unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit")
 model = AutoModelForCausalLM.from_pretrained(
-    "unsloth/Llama-3.2-3B-Instruct",
+    "unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit",
     device_map="auto",
     load_in_4bit=True,
     torch_dtype=torch.float16,
@@ -55,7 +56,7 @@ def generate_itinerary(origin, destination, departure_date, return_date):
     - Only include **one light attraction in the morning**.
     - After lunch, traveler must **check out** and take a **flight from {destination} to {origin}**.
     - ❗ Do **not** include anything after the flight.
-    - ❗ End the itinerary with exactly: `Flight from Dallas to Tucson`
+    - ❗ End the itinerary with exactly: `flight from {destination} to {origin}`
 
     Days 2 to {days - 1}:
     - Include **2 to 3 named attractions or activities**.
