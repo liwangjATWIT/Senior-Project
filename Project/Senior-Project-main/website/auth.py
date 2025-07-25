@@ -2,18 +2,26 @@ from flask import Blueprint as bl, render_template, request, flash, redirect, ur
 from .models import User, db
 from datetime import datetime
 import re
-# from transformers import AutoTokenizer, AutoModelForCausalLM  # type: ignore
-# import torch  # type: ignore
-import requests
+from transformers import AutoTokenizer, AutoModelForCausalLM  # type: ignore
+import torch  # type: ignore
 
 auth = bl('auth', __name__)
 
-# # Load GPT-2 model and tokenizer once at server start
-# tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
-# model = AutoModelForCausalLM.from_pretrained("openai-community/gpt2")
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# model.to(device)
-# model.eval()
+tokenizer = AutoTokenizer.from_pretrained("unsloth/Llama-3.2-3B-Instruct")
+model = AutoModelForCausalLM.from_pretrained(
+    "unsloth/Llama-3.2-3B-Instruct",
+    device_map="auto",
+    load_in_4bit=True,
+    torch_dtype=torch.float16,
+)
+
+
+# Move model to GPU if available, else CPU
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
+# Set model to evaluation mode
+model.eval()
 
 def validate_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -22,54 +30,109 @@ def validate_email(email):
 def sanitize_input(input_string):
     return input_string.strip() if input_string else ""
 
-
-
-COLAB_API_URL = "https://your-ngrok-url.ngrok-free.app/generate"  # <-- replace with actual URL
-
+device = next(model.parameters()).device
 def generate_itinerary(origin, destination, departure_date, return_date):
-    # Calculate number of days
-    from datetime import datetime
-    fmt = "%Y-%m-%d"
+    start_date = datetime.strptime(departure_date, "%Y-%m-%d")
+    end_date = datetime.strptime(return_date, "%Y-%m-%d")
+    days = (end_date - start_date).days + 1
+    prompt = f"""
+    You are a helpful travel assistant. Based on the trip details below, generate a detailed, realistic daily travel itinerary with **approximate times** for each meal and activity.
+
+    Trip Details:
+    - Origin: {origin}
+    - Destination: {destination}
+    - Travel Dates: {start_date} to {end_date}
+    - Trip Length: {days} days
+
+    Day 1:
+    - Begin with a morning flight from the origin to the destination.
+    - Do not include breakfast.
+    - After check-in, the traveler should **rest for the afternoon**.
+    - Include **only one specific named attraction in the early evening**, followed by dinner and return to hotel.
+    - No more than 1 attraction or activity this day.
+
+    Day {days} (Final Day):
+    - Only include **one light attraction in the morning**.
+    - After lunch, traveler must **check out** and take a **flight from {destination} to {origin}**.
+    - ❗ Do **not** include anything after the flight.
+    - ❗ End the itinerary with exactly: `Flight from Dallas to Tucson`
+
+    Days 2 to {days - 1}:
+    - Include **2 to 3 named attractions or activities**.
+    - Ensure a mix of museums, landmarks, parks, and local restaurants or food spots.
+    - Attractions must be real, not generic phrases.
+    - Space them out reasonably (morning, afternoon, evening), with breaks for lunch and dinner.
+
+    Format:
+    YYYY-MM-DD  
+    Breakfast at [place] — 8:30 AM  
+    Morning: [Attraction 1] — 10:00 AM  
+    Lunch at [place] — 12:30 PM  
+    Afternoon: [Attraction 2] — 2:00 PM  
+    (Optional) Evening: [Attraction or scenic walk] — 5:00 PM  
+    Dinner at [place] — 7:00 PM  
+    Return to hotel
+    """
+
     try:
-        days = (datetime.strptime(return_date, fmt) - datetime.strptime(departure_date, fmt)).days + 1
-        if days <= 0:
-            raise ValueError("Return date must be after departure date")
+        inputs = tokenizer(prompt, return_tensors="pt").to(device)
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=600,
+            do_sample=False,           # Greedy decoding for focused output
+            temperature=0.3,           # Low temperature for less randomness
+            top_p=0.9,
+            repetition_penalty=1.1,
+            eos_token_id=tokenizer.eos_token_id,
+            pad_token_id=tokenizer.pad_token_id
+        )
+        # Decode only new tokens
+        generated_text = tokenizer.decode(
+            outputs[0][inputs["input_ids"].shape[-1]:],
+            skip_special_tokens=True
+        )
+
+        date_pattern = r"\w+day, \w+ \d{1,2}, \d{4}"  # e.g., Friday, July 25, 2025
+
+        itinerary = []
+        current_day = ""
+        current_date = ""
+        seen = set()
+
+        for line in generated_text.strip().split("\n"):
+            clean_line = line.strip()
+            if not clean_line or clean_line in seen:
+                continue
+            seen.add(clean_line)
+
+            # Detect 'Day N: Date' line
+            if clean_line.startswith("Day "):
+                parts = clean_line.split(":", 1)
+                current_day = parts[0].strip()
+                if len(parts) > 1:
+                    match = re.search(date_pattern, parts[1])
+                    current_date = match.group(0) if match else ""
+                else:
+                    current_date = ""
+                continue
+
+            # Detect line that is just a date
+            if re.match(date_pattern, clean_line):
+                current_date = clean_line
+                continue
+
+            # Otherwise it's an activity line
+            itinerary.append({
+                'day': current_day,
+                'date': current_date,
+                'activities': clean_line
+            })
+
+        return itinerary
+
     except Exception as e:
-        return [{
-            'day': 'Error',
-            'date': '',
-            'activities': f'Invalid date input: {e}'
-        }]
-
-    payload = {
-        "origin": origin,
-        "destination": destination,
-        "start_date": departure_date,
-        "end_date": return_date,
-        "days": days
-    }
-
-    try:
-        response = requests.post(COLAB_API_URL, json=payload)
-        response.raise_for_status()
-        result = response.json()
-
-        if "itinerary" in result:
-            raw = result["itinerary"]
-            # Split by days for your UI
-            itinerary = [{"day": f"Day {i+1}", "date": "", "activities": day.strip()} 
-                         for i, day in enumerate(raw.split("\n\n")) if day.strip()]
-            return itinerary
-
-        return [{"day": "Error", "date": "", "activities": "Unexpected response format"}]
-
-    except Exception as e:
-        return [{
-            'day': 'Error',
-            'date': '',
-            'activities': f"Failed to generate itinerary: {e}"
-        }]
-
+        print(f"Error generating itinerary: {e}")
+        return []
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
