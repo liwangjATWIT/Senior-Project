@@ -2,273 +2,696 @@
 {% block title %}Vacation Genie - Plan Your Perfect Trip{% endblock %}
 
 {% block content %}
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-<div class="min-h-screen bg-gray-100 py-12">
-  <div class="container mx-auto px-4">
-    
-    <!-- Main Planning Card -->
-    <div class="max-w-4xl mx-auto">
-      <div class="bg-white shadow-lg rounded-lg p-8 mb-8">
-        
-        <!-- Header -->
-        <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold text-gray-800 mb-2">🌴 Vacation Genie</h1>
-          <p class="text-gray-600 text-lg">Your AI-powered travel companion for the perfect getaway</p>
-        </div>
-
-        <!-- Trip Planning Prompt -->
-        <div class="bg-blue-50 rounded-lg p-6 mb-6">
-          <form id="travelSearchForm" method="POST" action="{{ url_for('auth.dashboard') }}">
-            <div class="text-lg leading-relaxed text-gray-700">
-              <span>I'm planning a trip from </span>
-              
-              <!-- Origin Input -->
-              <div class="inline-block relative">
-                <input type="text" id="origin" name="origin" 
-                       class="inline-input" 
-                       placeholder="city" 
-                       autocomplete="off" 
-                       required 
-                       value="{{ origin or '' }}">
-                <div class="autocomplete-dropdown" id="originDropdown"></div>
-              </div>
-              
-              <span> to </span>
-              
-              <!-- Destination Input -->
-              <div class="inline-block relative">
-                <input type="text" id="destination" name="destination" 
-                       class="inline-input" 
-                       placeholder="destination" 
-                       autocomplete="off" 
-                       required
-                       value="{{ destination or '' }}">
-                <div class="autocomplete-dropdown" id="destinationDropdown"></div>
-              </div>
-              
-              <span>, departing on </span>
-              
-              <!-- Departure Date -->
-              <input type="date" id="departureDate" name="departureDate" 
-                     class="inline-input date-input" 
-                     required
-                     value="{{ departure_date or '' }}">
-              
-              <span> and returning on </span>
-              
-              <!-- Return Date -->
-              <input type="date" id="returnDate" name="returnDate" 
-                     class="inline-input date-input" 
-                     required
-                     value="{{ return_date or '' }}">
-              
-              <span>. Please generate a daily itinerary for my trip.</span>
-            </div>
-            
-            <!-- Generate Button -->
-            <div class="text-center mt-6">
-              <button type="submit" class="bg-blue-400 hover:bg-blue-500 text-white px-8 py-3 rounded-lg shadow-md transition font-semibold">
-                Generate My Itinerary
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Results Section -->
-    {% if itinerary %}
-    <div class="max-w-4xl mx-auto">
-      <div class="bg-white shadow-lg rounded-lg p-8">
-        <div class="text-center mb-6">
-          <h2 class="text-3xl font-bold text-gray-800 mb-2">✈️ Your Perfect Itinerary</h2>
-          <p class="text-gray-600">Here's your personalized travel plan</p>
-        </div>
-
-        <!-- Timeline Container -->
-        <div class="space-y-6" id="timelineContainer">
-          {% for item in itinerary %}
-          <div class="bg-gray-50 rounded-lg p-6 border-l-4 border-blue-400">
-            <div class="flex items-start">
-              <div class="flex-shrink-0 w-12 h-12 bg-blue-400 text-white rounded-full flex items-center justify-center font-bold mr-4">
-                {{ loop.index }}
-              </div>
-              <div class="flex-grow">
-                <h3 class="text-xl font-semibold text-gray-800 mb-1">{{ item.day }}</h3>
-                <p class="text-sm text-gray-500 mb-2">{{ item.date }}</p>
-                <p class="text-gray-700 leading-relaxed">{{ item.activities }}</p>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- Loading State -->
-    <div class="loading-section" id="loadingSection" style="display: none;">
-      <div class="text-center">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
-        <p class="mt-3 text-gray-600">Creating your perfect itinerary...</p>
-      </div>
-    </div>
-
-  </div>
-</div>
-
 <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-container {
+    background: #020024;
+    background: linear-gradient(171deg,rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated background elements */
+  .bg-decoration {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .cloud {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    animation: float 20s infinite ease-in-out;
+  }
+
+  .cloud1 {
+    width: 100px;
+    height: 40px;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  .cloud2 {
+    width: 150px;
+    height: 60px;
+    top: 40%;
+    right: 15%;
+    animation-delay: -7s;
+  }
+
+  .cloud3 {
+    width: 80px;
+    height: 30px;
+    top: 70%;
+    left: 20%;
+    animation-delay: -14s;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    25% { transform: translateY(-20px) translateX(10px); }
+    50% { transform: translateY(-10px) translateX(-5px); }
+    75% { transform: translateY(-30px) translateX(15px); }
+  }
+
+  /* Floating elements */
+  .floating-icon {
+    position: fixed;
+    font-size: 2rem;
+    opacity: 0.1;
+    animation: floatSlow 15s infinite linear;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .icon1 { top: 20%; left: 5%; animation-delay: 0s; }
+  .icon2 { top: 60%; right: 8%; animation-delay: -5s; }
+  .icon3 { bottom: 30%; left: 15%; animation-delay: -10s; }
+
+  @keyframes floatSlow {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+    100% { transform: translateY(0px) rotate(360deg); }
+  }
+
+  /* Main content */
+  .content-wrapper {
+    padding: 4rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: slideDown 1s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero p {
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 3rem;
+    animation: fadeIn 1s ease-out 0.3s both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Trip planning card */
+  .trip-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    animation: slideUp 1s ease-out 0.6s both;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .trip-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #020024;
+    background: linear-gradient(171deg,rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .form-text {
+    color: #64748b;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+
   .inline-input {
     display: inline-block;
-    border: 2px solid #60A5FA;
-    border-radius: 6px;
-    padding: 4px 8px;
-    margin: 0 2px;
-    background: white;
+    border: 2px solid #e1e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 0 4px;
+    background: rgba(255, 255, 255, 0.9);
     font-weight: 600;
     color: #1F2937;
     min-width: 120px;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    position: relative;
   }
-  
+
   .inline-input:focus {
     outline: none;
-    border-color: #3B82F6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    background: #F8FAFC;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+    background: white;
   }
-  
+
   .inline-input::placeholder {
     color: #9CA3AF;
     font-weight: normal;
   }
-  
+
   .date-input {
-    min-width: 140px;
+    min-width: 160px;
   }
-  
+
   .autocomplete-dropdown {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
     background: white;
-    border: 1px solid #D1D5DB;
+    border: 1px solid #e1e8f0;
     border-top: none;
-    border-radius: 0 0 6px 6px;
+    border-radius: 0 0 12px 12px;
     max-height: 200px;
     overflow-y: auto;
     z-index: 1000;
     display: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   }
 
   .autocomplete-item {
-    padding: 8px 12px;
+    padding: 12px 16px;
     cursor: pointer;
-    border-bottom: 1px solid #F3F4F6;
-    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+    font-weight: 500;
   }
 
   .autocomplete-item:hover,
   .autocomplete-item.active {
-    background-color: #F8FAFC;
+    background: #020024;
+    background: linear-gradient(171deg, rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
+    color: white;
+    transform: translateX(4px);
   }
 
   .autocomplete-item:last-child {
     border-bottom: none;
   }
+
+  .generate-btn {
+    background: #020024;
+    background: linear-gradient(171deg, rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
+    color: white;
+    border: none;
+    padding: 18px 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 2rem auto 0;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .generate-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: #020024;
+    background: linear-gradient(171deg, rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
+    transition: left 0.5s;
+  }
+
+  .generate-btn:hover::before {
+    left: 100%;
+  }
+
+  .generate-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+  }
+
+  .generate-btn:active {
+    transform: translateY(-1px);
+  }
+
+  .generate-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Results section */
+  .results-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.8s ease-out;
+  }
+
+  .results-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ffd700, #667eea, #764ba2);
+  }
+
+  .results-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .results-header h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .results-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+  }
+
+  .timeline-item {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .timeline-item:hover::before {
+    opacity: 1;
+  }
+
+  .timeline-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+  }
+
+  .timeline-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .day-number {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-right: 1rem;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .day-info h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  .day-info .date {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0;
+  }
+
+  .activities {
+    color: #374151;
+    line-height: 1.6;
+    font-size: 1rem;
+  }
+
+  /* Loading animation */
+  .loading-section {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .loading-text {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  /* Sparkle animation */
+  @keyframes sparkleOut {
+    0% { opacity: 1; transform: scale(0) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1) rotate(180deg); }
+    100% { opacity: 0; transform: scale(0) rotate(360deg); }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .content-wrapper {
+      padding: 2rem 1rem;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+    }
+
+    .trip-card, .results-card {
+      padding: 2rem 1.5rem;
+    }
+
+    .form-text {
+      font-size: 1rem;
+    }
+
+    .inline-input {
+      min-width: 100px;
+      margin: 2px;
+    }
+
+    .date-input {
+      min-width: 140px;
+    }
+
+    .timeline-item {
+      padding: 1.5rem;
+    }
+
+    .timeline-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .day-number {
+      margin-right: 0;
+    }
+  }
 </style>
 
+<div class="main-container">
+  <!-- Animated background elements -->
+  <div class="bg-decoration cloud cloud1"></div>
+  <div class="bg-decoration cloud cloud2"></div>
+  <div class="bg-decoration cloud cloud3"></div>
+
+  <!-- Floating icons -->
+  <div class="floating-icon icon1">✈️</div>
+  <div class="floating-icon icon2">🏖️</div>
+  <div class="floating-icon icon3">🗺️</div>
+
+  <div class="content-wrapper">
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1>Vacation Genie</h1>
+      <p>Your AI-powered travel companion for the perfect getaway</p>
+    </section>
+
+    <!-- Planning Section -->
+    <div class="trip-card">
+      <form id="travelSearchForm" method="POST" action="{{ url_for('auth.dashboard') }}">
+        <div class="form-text">
+          I'm planning a trip from
+
+          <!-- Origin -->
+          <span style="position: relative; display: inline-block;">
+            <input type="text" id="origin" name="origin" placeholder="city"
+                   class="inline-input" autocomplete="off" required
+                   value="{{ origin or '' }}">
+            <div class="autocomplete-dropdown" id="originDropdown"></div>
+          </span>
+
+          to
+
+          <!-- Destination -->
+          <span style="position: relative; display: inline-block;">
+            <input type="text" id="destination" name="destination" placeholder="destination"
+                   class="inline-input" autocomplete="off" required
+                   value="{{ destination or '' }}">
+            <div class="autocomplete-dropdown" id="destinationDropdown"></div>
+          </span>,
+
+          departing on
+
+          <!-- Departure Date -->
+          <input type="date" id="departureDate" name="departureDate"
+                 class="inline-input date-input" required
+                 value="{{ departure_date or '' }}">
+
+          and returning on
+
+          <!-- Return Date -->
+          <input type="date" id="returnDate" name="returnDate"
+                 class="inline-input date-input" required
+                 value="{{ return_date or '' }}">
+
+          . Let our AI genie craft the perfect daily itinerary for your dream vacation, complete with recommendations for attractions, dining, and hidden gems.
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="generate-btn" id="submitBtn">
+          ✨ Generate My Magical Itinerary ✨
+        </button>
+      </form>
+    </div>
+
+    <!-- Results Section -->
+    {% if itinerary %}
+    <div class="results-card">
+      <div class="results-header">
+        <h2>✈️ Your Perfect Itinerary</h2>
+        <p>Here's your personalized travel plan</p>
+      </div>
+
+      <!-- Timeline Items -->
+      <div id="timelineContainer">
+        {% for item in itinerary %}
+        <div class="timeline-item">
+          <div class="timeline-header">
+            <div class="day-number">{{ loop.index }}</div>
+            <div class="day-info">
+              <h3>{{ item.day }}</h3>
+              <p class="date">{{ item.date }}</p>
+            </div>
+          </div>
+          <div class="activities">{{ item.activities }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Loading Animation -->
+    <div class="loading-section" id="loadingSection" style="display: none;">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Creating your perfect itinerary...</p>
+    </div>
+  </div>
+</div>
+
 <script>
-// Popular cities for autocomplete
-const cities = [
-  'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Phoenix, AZ',
-  'Philadelphia, PA', 'San Antonio, TX', 'San Diego, CA', 'Dallas, TX', 'San Jose, CA',
-  'Austin, TX', 'Jacksonville, FL', 'Fort Worth, TX', 'Columbus, OH', 'Charlotte, NC',
-  'San Francisco, CA', 'Indianapolis, IN', 'Seattle, WA', 'Denver, CO', 'Washington, DC',
-  'Boston, MA', 'El Paso, TX', 'Nashville, TN', 'Detroit, MI', 'Oklahoma City, OK',
-  'Portland, OR', 'Las Vegas, NV', 'Memphis, TN', 'Louisville, KY', 'Baltimore, MD',
-  'Milwaukee, WI', 'Albuquerque, NM', 'Tucson, AZ', 'Fresno, CA', 'Mesa, AZ',
-  'Sacramento, CA', 'Atlanta, GA', 'Kansas City, MO', 'Colorado Springs, CO', 'Miami, FL',
-  'Raleigh, NC', 'Omaha, NE', 'Long Beach, CA', 'Virginia Beach, VA', 'Oakland, CA',
-  // International destinations
-  'London, UK', 'Paris, France', 'Tokyo, Japan', 'Sydney, Australia', 'Rome, Italy',
-  'Barcelona, Spain', 'Amsterdam, Netherlands', 'Berlin, Germany', 'Vienna, Austria',
-  'Prague, Czech Republic', 'Budapest, Hungary', 'Istanbul, Turkey', 'Athens, Greece',
-  'Lisbon, Portugal', 'Copenhagen, Denmark', 'Stockholm, Sweden', 'Oslo, Norway',
-  'Dublin, Ireland', 'Edinburgh, Scotland', 'Zurich, Switzerland'
-];
+  const cities = [
+    "New York, NY", "Los Angeles, CA", "Chicago, IL", "Houston, TX", "Phoenix, AZ",
+    "Philadelphia, PA", "San Antonio, TX", "San Diego, CA", "Dallas, TX", "San Jose, CA",
+    "Austin, TX", "Jacksonville, FL", "Fort Worth, TX", "Columbus, OH", "Charlotte, NC",
+    "San Francisco, CA", "Indianapolis, IN", "Seattle, WA", "Denver, CO", "Washington, DC",
+    "Boston, MA", "El Paso, TX", "Nashville, TN", "Detroit, MI", "Oklahoma City, OK",
+    "Portland, OR", "Las Vegas, NV", "Memphis, TN", "Louisville, KY", "Baltimore, MD",
+    "Milwaukee, WI", "Albuquerque, NM", "Tucson, AZ", "Fresno, CA", "Sacramento, CA",
+    "Mesa, AZ", "Kansas City, MO", "Atlanta, GA", "Long Beach, CA", "Colorado Springs, CO",
+    "Raleigh, NC", "Miami, FL", "Virginia Beach, VA", "Omaha, NE", "Oakland, CA",
+    "Minneapolis, MN", "Tulsa, OK", "Arlington, TX", "Tampa, FL", "New Orleans, LA",
+    "London, UK", "Paris, France", "Tokyo, Japan", "Rome, Italy", "Barcelona, Spain",
+    "Amsterdam, Netherlands", "Berlin, Germany", "Sydney, Australia", "Dubai, UAE", "Bangkok, Thailand",
+    "Singapore", "Hong Kong", "Istanbul, Turkey", "Moscow, Russia", "Mumbai, India",
+    "Rio de Janeiro, Brazil", "Buenos Aires, Argentina", "Cairo, Egypt", "Cape Town, South Africa", "Toronto, Canada"
+  ];
 
-// Autocomplete functionality
-function setupAutocomplete(inputId, dropdownId) {
-  const input = document.getElementById(inputId);
-  const dropdown = document.getElementById(dropdownId);
-  
-  input.addEventListener('input', function() {
-    const value = this.value.toLowerCase();
-    const filtered = cities.filter(city => 
-      city.toLowerCase().includes(value)
-    ).slice(0, 8);
+  function setupAutocomplete(inputId, dropdownId) {
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
+
+    input.addEventListener('input', function () {
+      const value = this.value.toLowerCase();
+      const filtered = cities.filter(city =>
+        city.toLowerCase().includes(value)
+      ).slice(0, 8);
+
+      if (value.length > 0 && filtered.length > 0) {
+        dropdown.innerHTML = filtered.map(city =>
+          `<div class="autocomplete-item" onclick="selectCity('${inputId}', '${city}')">${city}</div>`
+        ).join('');
+        dropdown.style.display = 'block';
+      } else {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+  }
+
+  function selectCity(inputId, city) {
+    document.getElementById(inputId).value = city;
+    const dropdownId = inputId + 'Dropdown';
+    document.getElementById(dropdownId).style.display = 'none';
+  }
+
+  setupAutocomplete('origin', 'originDropdown');
+  setupAutocomplete('destination', 'destinationDropdown');
+
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('departureDate').min = today;
+  document.getElementById('returnDate').min = today;
+
+  document.getElementById('departureDate').addEventListener('change', function () {
+    document.getElementById('returnDate').min = this.value;
+  });
+
+  document.getElementById('travelSearchForm').addEventListener('submit', function (e) {
+    const origin = document.getElementById('origin').value.trim();
+    const destination = document.getElementById('destination').value.trim();
+    const departureDate = document.getElementById('departureDate').value;
+    const returnDate = document.getElementById('returnDate').value;
+
+    if (!origin || !destination || !departureDate || !returnDate) {
+      e.preventDefault();
+      alert("Please fill in all fields before generating your itinerary.");
+      return;
+    }
+
+    if (returnDate < departureDate) {
+      e.preventDefault();
+      alert("Return date cannot be before departure date.");
+      return;
+    }
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.innerHTML = '🔮 Creating Magic...';
+    submitBtn.disabled = true;
     
-    if (value.length > 0 && filtered.length > 0) {
-      dropdown.innerHTML = filtered.map(city => 
-        `<div class="autocomplete-item" onclick="selectCity('${inputId}', '${city}')">${city}</div>`
-      ).join('');
-      dropdown.style.display = 'block';
-    } else {
-      dropdown.style.display = 'none';
+    document.getElementById('loadingSection').style.display = 'block';
+  });
+
+  // Add sparkle effects on mouse move
+  document.addEventListener('mousemove', (e) => {
+    if (Math.random() > 0.98) {
+      createSparkle(e.clientX, e.clientY);
     }
   });
-  
-  // Hide dropdown when clicking outside
-  document.addEventListener('click', function(e) {
-    if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-      dropdown.style.display = 'none';
-    }
-  });
-}
 
-function selectCity(inputId, city) {
-  document.getElementById(inputId).value = city;
-  document.getElementById(inputId.replace(/^(\w+)/, '$1Dropdown')).style.display = 'none';
-}
-
-// Initialize autocomplete for both inputs
-setupAutocomplete('origin', 'originDropdown');
-setupAutocomplete('destination', 'destinationDropdown');
-
-// Set minimum date to today
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('departureDate').min = new Date().toISOString().split('T')[0];
-document.getElementById('returnDate').min = new Date().toISOString().split('T')[0];
-
-document.getElementById('departureDate').addEventListener('change', function () {
-  document.getElementById('returnDate').min = this.value;
-});
-
-document.getElementById('travelSearchForm').addEventListener('submit', function (e) {
-  const origin = document.getElementById('origin').value.trim();
-  const destination = document.getElementById('destination').value.trim();
-  const departureDate = document.getElementById('departureDate').value;
-  const returnDate = document.getElementById('returnDate').value;
-
-  if (!origin || !destination || !departureDate || !returnDate) {
-    e.preventDefault(); // Prevent form submission
-    alert("Please fill in all fields before generating your itinerary.");
-    return;
+  function createSparkle(x, y) {
+    const sparkle = document.createElement('div');
+    sparkle.innerHTML = '✨';
+    sparkle.style.position = 'fixed';
+    sparkle.style.left = x + 'px';
+    sparkle.style.top = y + 'px';
+    sparkle.style.pointerEvents = 'none';
+    sparkle.style.fontSize = '12px';
+    sparkle.style.zIndex = '1000';
+    sparkle.style.animation = 'sparkleOut 1s ease-out forwards';
+    
+    document.body.appendChild(sparkle);
+    
+    setTimeout(() => {
+      sparkle.remove();
+    }, 1000);
   }
-
-  // Optional: extra check to ensure return date is after departure
-  if (returnDate < departureDate) {
-    e.preventDefault();
-    alert("Return date cannot be before departure date.");
-    return;
-  }
-
-  // Show loading animation while the form submits
-  document.getElementById('loadingSection').style.display = 'block';
-});
 </script>
 {% endblock %}

@@ -2,8 +2,8 @@ from flask import Blueprint as bl, render_template, request, flash, redirect, ur
 from .models import User, db
 from datetime import datetime
 import re
-from transformers import AutoTokenizer, AutoModelForCausalLM  # type: ignore
-import torch  # type: ignore
+from transformers import AutoTokenizer, AutoModelForCausalLM 
+import torch  
 
 auth = bl('auth', __name__)
 

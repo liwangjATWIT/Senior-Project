@@ -4,43 +4,43 @@
 {% block content %}
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-<div class="flex justify-center items-center min-h-screen bg-gray-100 py-12">
-  <div class="bg-white shadow-lg rounded-lg p-10 w-full max-w-md">
-    <h2 class="text-4xl font-bold text-center mb-6 text-gray-800">Log in</h2>
+<div class="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
+  <div class="bg-white/90 backdrop-blur-md shadow-xl rounded-2xl p-10 w-full max-w-md border border-blue-200">
+    <h2 class="text-4xl font-extrabold text-center mb-8 text-blue-700">Log in</h2>
 
     <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-6">
       <div>
-        <label for="email" class="block text-gray-700 mb-1">Email</label>
-        <input
+       <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+         <input
           id="email"
           name="email"
           type="email"
-          placeholder="Email"
+          placeholder="you@example.com"
           required
-          class="w-full border p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full border border-gray-300 p-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
         />
       </div>
 
       <div>
-        <label for="password" class="block text-gray-700 mb-1">Password</label>
-        <input
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+         <input
           id="password"
           name="password"
           type="password"
-          placeholder="Password"
+          placeholder="••••••••"
           required
-          class="w-full border p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full border border-gray-300 p-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
         />
       </div>
 
-      <div class="flex justify-between text-sm">
-        <a href="{{ url_for('auth.forgot_password') }}" class="text-blue-600 hover:underline">Forgot password?</a>
-        <a href="{{ url_for('auth.sign_up') }}" class="text-blue-600 hover:underline">Sign Up</a>
+     <div class="flex justify-between items-center text-sm text-gray-600">
+        <a href="{{ url_for('auth.forgot_password') }}" class="hover:text-blue-600 hover:underline transition">Forgot password?</a>
+        <a href="{{ url_for('auth.sign_up') }}" class="hover:text-blue-600 hover:underline transition">Sign Up</a>
       </div>
 
-      <button
+     <button
         type="submit"
-        class="w-full bg-blue-400 hover:bg-blue-500 text-white py-2 rounded-lg shadow-md transition"
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl shadow-md transition duration-200 transform hover:-translate-y-0.5"
       >
         Log In
       </button>

@@ -2,14 +2,583 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="page-wrapper">
+<style>
+  * {
+    box-sizing: border-box;
+  }
 
-  <!-- Centered Uiverse Landscape Card -->
-  <div class="center-card-wrapper">
-    <div class="card">
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    padding-bottom: 120px;
+  }
+
+  /* Animated background elements */
+  .bg-decoration {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .cloud {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    animation: float 20s infinite ease-in-out;
+  }
+
+  .cloud1 {
+    width: 100px;
+    height: 40px;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  .cloud2 {
+    width: 150px;
+    height: 60px;
+    top: 40%;
+    right: 15%;
+    animation-delay: -7s;
+  }
+
+  .cloud3 {
+    width: 80px;
+    height: 30px;
+    top: 70%;
+    left: 20%;
+    animation-delay: -14s;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    25% { transform: translateY(-20px) translateX(10px); }
+    50% { transform: translateY(-10px) translateX(-5px); }
+    75% { transform: translateY(-30px) translateX(15px); }
+  }
+
+  /* Floating elements */
+  .floating-icon {
+    position: fixed;
+    font-size: 2rem;
+    opacity: 0.1;
+    animation: floatSlow 15s infinite linear;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .icon1 { top: 20%; left: 5%; animation-delay: 0s; }
+  .icon2 { top: 60%; right: 8%; animation-delay: -5s; }
+  .icon3 { bottom: 30%; left: 15%; animation-delay: -10s; }
+
+  @keyframes floatSlow {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+    100% { transform: translateY(0px) rotate(360deg); }
+  }
+
+  /* Content wrapper */
+  .content-wrapper {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Weather card */
+  .weather-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 0;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    position: relative;
+    animation: slideUp 0.8s ease-out;
+  }
+
+  .weather-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #ffd700);
+    z-index: 1;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Landscape section */
+  .landscape-section {
+    position: relative;
+    height: 280px;
+    background: linear-gradient(135deg, #a0d2eb 0%, #e0f7fa 100%);
+    overflow: hidden;
+  }
+
+  .sun {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    width: 80px;
+    height: 80px;
+    margin-left: -40px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+    animation: sunGlow 4s ease-in-out infinite;
+  }
+
+  @keyframes sunGlow {
+    0%, 100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); }
+    50% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.6); }
+  }
+
+  .hill-1, .hill-2, .hill-3, .hill-4 {
+    position: absolute;
+    bottom: 0;
+    border-radius: 50% 50% 0 0;
+  }
+
+  .hill-1 { 
+    left: 0; 
+    width: 60%; 
+    height: 120px; 
+    background: linear-gradient(135deg, #6bbf59 0%, #4caf50 100%);
+  }
+  .hill-2 { 
+    right: 0; 
+    width: 50%; 
+    height: 100px; 
+    background: linear-gradient(135deg, #519e4d 0%, #388e3c 100%);
+  }
+  .hill-3 { 
+    left: 20%; 
+    width: 40%; 
+    height: 80px; 
+    background: linear-gradient(135deg, #4e944f 0%, #2e7d32 100%);
+    z-index: 2; 
+  }
+  .hill-4 { 
+    left: 60%; 
+    width: 30%; 
+    height: 60px; 
+    background: linear-gradient(135deg, #3e7a3d 0%, #1b5e20 100%);
+    z-index: 1; 
+  }
+
+  .ocean {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: linear-gradient(135deg, #40c4ff 0%, #0288d1 100%);
+  }
+
+  .reflection {
+    width: 10px; 
+    height: 10px;
+    background: rgba(255,255,255,0.6);
+    position: absolute;
+    bottom: 10px;
+    border-radius: 50%;
+    animation: sparkle 2s ease-in-out infinite;
+  }
+
+  @keyframes sparkle {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  .reflection:nth-child(1) { left: 10%; animation-delay: 0s; }
+  .reflection:nth-child(2) { left: 30%; animation-delay: 0.4s; }
+  .reflection:nth-child(3) { left: 50%; animation-delay: 0.8s; }
+  .reflection:nth-child(4) { left: 70%; animation-delay: 1.2s; }
+  .reflection:nth-child(5) { left: 90%; animation-delay: 1.6s; }
+
+  .tree-1, .tree-2, .tree-3 {
+    position: absolute;
+    bottom: 40px;
+    transition: transform 0.3s ease;
+  }
+
+  .tree-1:hover, .tree-2:hover, .tree-3:hover {
+    transform: scale(1.1);
+  }
+
+  .tree-1 { left: 10%; }
+  .tree-2 { left: 20%; }
+  .tree-3 { left: 80%; }
+
+  /* Weather info section */
+  .weather-info-section {
+    padding: 2rem;
+  }
+
+  .weather-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1.5rem;
+  }
+
+  .left-side {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .left-side p {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .right-side {
+    text-align: right;
+  }
+
+  .location {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .location span {
+    font-weight: 500;
+  }
+
+  .right-side p {
+    margin: 0.25rem 0;
+  }
+
+  .temperature {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ffd700 0%, #ff9800 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .forecast {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .forecast > div {
+    text-align: center;
+    color: #374151;
+  }
+
+  .forecast > div p {
+    margin: 0.25rem 0;
+    font-weight: 500;
+  }
+
+  .separator {
+    width: 2px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 1px;
+    opacity: 0.3;
+  }
+
+  /* Itinerary section */
+  .itinerary-section {
+    margin-top: 2rem;
+  }
+
+  .itinerary-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.8s ease-out;
+  }
+
+  .itinerary-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ffd700, #667eea, #764ba2);
+  }
+
+  .itinerary-header h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .itinerary-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  /* Individual day cards */
+  .day-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    animation: slideUp 0.6s ease-out both;
+  }
+
+  .day-card:nth-child(1) { animation-delay: 0.1s; }
+  .day-card:nth-child(2) { animation-delay: 0.2s; }
+  .day-card:nth-child(3) { animation-delay: 0.3s; }
+  .day-card:nth-child(4) { animation-delay: 0.4s; }
+  .day-card:nth-child(5) { animation-delay: 0.5s; }
+  .day-card:nth-child(6) { animation-delay: 0.6s; }
+  .day-card:nth-child(7) { animation-delay: 0.7s; }
+
+  .day-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #ffd700);
+  }
+
+  .day-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 80px rgba(102, 126, 234, 0.2);
+  }
+
+  .day-card-header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .day-card-header h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .day-card-header .date {
+    color: #64748b;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .underline-accent {
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+    margin: 1rem auto;
+  }
+
+  .activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1.2rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-radius: 12px;
+    font-size: 1rem;
+    color: #374151;
+    line-height: 1.6;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    position: relative;
+  }
+
+  .activity-item:hover {
+    color: #667eea;
+    transform: translateX(8px);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-left: 3px solid #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+  }
+
+  .activity-icon {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+    filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.2));
+  }
+
+  .activity-content {
+    flex: 1;
+  }
+
+  .activity-time {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .activity-description {
+    color: #374151;
+    font-weight: 500;
+  }
+
+  .no-itinerary {
+    text-align: center;
+    color: #64748b;
+    font-size: 1.1rem;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .content-wrapper {
+      padding: 1rem;
+    }
+
+    .weather-card,
+    .day-card,
+    .itinerary-header {
+      padding: 1.5rem;
+    }
+
+    .landscape-section {
+      height: 200px;
+    }
+
+    .sun {
+      width: 60px;
+      height: 60px;
+      margin-left: -30px;
+    }
+
+    .weather-info {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .right-side {
+      text-align: center;
+    }
+
+    .location {
+      justify-content: center;
+    }
+
+    .forecast {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .separator {
+      width: 50px;
+      height: 2px;
+    }
+
+    .day-card-header h3 {
+      font-size: 1.5rem;
+    }
+
+    .activity-item {
+      padding: 0.75rem;
+      gap: 0.75rem;
+    }
+
+    .messageBox {
+      padding: 0.75rem;
+      gap: 0.5rem;
+    }
+
+    #messageInput {
+      font-size: 0.9rem;
+    }
+
+    #sendButton {
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<div class="main-container">
+  <!-- Animated background elements -->
+  <div class="bg-decoration cloud cloud1"></div>
+  <div class="bg-decoration cloud cloud2"></div>
+  <div class="bg-decoration cloud cloud3"></div>
+
+  <!-- Floating icons -->
+  <div class="floating-icon icon1">✈️</div>
+  <div class="floating-icon icon2">🏖️</div>
+  <div class="floating-icon icon3">🗺️</div>
+
+  <div class="content-wrapper">
+    <!-- Weather Card -->
+    <div class="weather-card">
       <!-- Landscape Visuals -->
       <section class="landscape-section">
-        <div class="sky"></div>
         <div class="sun"></div>
         <div class="hill-1"></div>
         <div class="hill-2"></div>
@@ -19,8 +588,6 @@
           <div class="reflection"></div>
           <div class="reflection"></div>
           <div class="reflection"></div>
-          <div class="shadow-hill-1"></div>
-          <div class="shadow-hill-2"></div>
         </div>
         <div class="hill-3"></div>
         <div class="hill-4"></div>
@@ -41,12 +608,10 @@
             <path d="M32,0C18.148,0,12,23.188,12,32c0,9.656,6.883,17.734,16,19.594V60c0,2.211,1.789,4,4,4s4-1.789,4-4v-8.406C45.117,49.734,52,41.656,52,32C52,22.891,46.051,0,32,0z"/>
           </svg>
         </div>
-
-        <div class="filter"></div>
       </section>
 
       <!-- Weather and Forecast Info -->
-      <section class="content-section">
+      <section class="weather-info-section">
         <div class="weather-info">
           <div class="left-side">
             <svg stroke="#fff" fill="none" viewBox="0 0 24 24" stroke-width="1.5" width="40" height="40">
@@ -67,321 +632,105 @@
         </div>
 
         <div class="forecast">
-          <div><p>Tuesday, 5th May</p><p>24°C</p></div>
+          <div><p>Tuesday, 5th May</p><p><strong>24°C</strong></p></div>
           <div class="separator"></div>
-          <div><p>Wednesday, 6th May</p><p>26°C</p></div>
+          <div><p>Wednesday, 6th May</p><p><strong>26°C</strong></p></div>
           <div class="separator"></div>
-          <div><p>Thursday, 7th May</p><p>22°C</p></div>
+          <div><p>Thursday, 7th May</p><p><strong>22°C</strong></p></div>
         </div>
       </section>
     </div>
-  </div>
 
-  <!-- Itinerary Section -->
-<!-- Itinerary Section -->
-<section class="itinerary-section" style="padding: 20px;">
-  {% if itinerary %}
-    {% set grouped = {} %}
-    {% for entry in itinerary %}
-      {% set key = entry.day ~ ' - ' ~ entry.date %}
-      {% if key not in grouped %}
-        {% set _ = grouped.update({key: []}) %}
-      {% endif %}
-      {% set _ = grouped[key].append(entry.activities) %}
-    {% endfor %}
-
-    <div class="itinerary-grouped">
-      {% for key, activities in grouped.items() %}
-        <div class="day-block fade-in-up">
-          <div class="day-header">
-            <h3 class="text-xl font-bold text-blue-600">{{ key }}</h3>
-            <div class="underline-accent"></div>
-          </div>
-          <ul class="activity-list">
-            {% for activity in activities %}
-              <li class="activity-item">
-                <svg class="activity-icon" fill="#60A5FA" viewBox="0 0 24 24" width="18" height="18">
-                  <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 
-                           10-4.486 10-10S17.514 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                </svg>
-                <span>{{ activity }}</span>
-              </li>
-            {% endfor %}
-          </ul>
+    <!-- Itinerary Section -->
+    <section class="itinerary-section">
+      {% if itinerary %}
+        <!-- Itinerary Header -->
+        <div class="itinerary-header">
+          <h2>🗓️ Your Travel Itinerary</h2>
+          <p>Your personalized day-by-day adventure plan</p>
         </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="text-center text-gray-500">No itinerary available. Use the form to generate one!</p>
-  {% endif %}
-</section>
 
 
 
-  <!-- Message Box -->
-  <div class="messageBox">
-    <div class="fileUploadWrapper">
-      <label for="file">
-        <svg fill="none" viewBox="0 0 337 337" width="24" height="24">
-          <circle stroke="#6c6c6c" stroke-width="20" cx="168.5" cy="168.5" r="158.5"/>
-          <path stroke="#6c6c6c" stroke-width="25" stroke-linecap="round" d="M167.759 79V259"/>
-          <path stroke="#6c6c6c" stroke-width="25" stroke-linecap="round" d="M79 167.138H259"/>
-        </svg>
-        <span class="tooltip">Add an image</span>
-      </label>
-      <input type="file" id="file" name="file"/>
-    </div>
-    <input required placeholder="Type your message here..." type="text" id="messageInput"/>
-    <button id="sendButton" class="btn btn-primary d-flex align-items-center gap-1">
-  <span>Send</span>
-  <svg id="sendIcon" viewBox="0 0 24 24" width="20" height="20" fill="white" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-  </svg>
-</button>
+        <!-- Individual Day Cards -->
+        {% set grouped = {} %}
+        {% for entry in itinerary %}
+          {% set key = entry.day ~ ' - ' ~ entry.date %}
+          {% if key not in grouped %}
+            {% set _ = grouped.update({key: []}) %}
+          {% endif %}
+          {% set _ = grouped[key].append(entry.activities) %}
+        {% endfor %}
+
+        {% for key, activities in grouped.items() %}
+          {% set day_info = key.split(' - ') %}
+          <div class="day-card">
+            <div class="day-card-header">
+              <h3>📅 {{ day_info[0] }}</h3>
+              <div class="date">{{ day_info[1] }}</div>
+              <div class="underline-accent"></div>
+            </div>
+            <ul class="activity-list">
+              {% for activity in activities %}
+                <li class="activity-item">
+                  {% set activity_parts = activity.split(' — ') %}
+                  {% if activity_parts|length > 1 %}
+                    {% set time_part = activity_parts[-1] %}
+                    {% set description_part = activity_parts[0] %}
+                  {% else %}
+                    {% set time_part = '' %}
+                    {% set description_part = activity %}
+                  {% endif %}
+                  
+                  {% if 'Flight' in activity %}
+                    <svg class="activity-icon" fill="#667eea" viewBox="0 0 24 24" width="20" height="20">
+                      <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                  {% elif 'Check-in' in activity or 'hotel' in activity.lower() %}
+                    <svg class="activity-icon" fill="#667eea" viewBox="0 0 24 24" width="20" height="20">
+                      <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V6H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>
+                    </svg>
+                  {% elif 'Rest' in activity or 'afternoon' in activity.lower() %}
+                    <svg class="activity-icon" fill="#667eea" viewBox="0 0 24 24" width="20" height="20">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                  {% elif 'Visit' in activity or 'Museum' in activity or 'Park' in activity %}
+                    <svg class="activity-icon" fill="#667eea" viewBox="0 0 24 24" width="20" height="20">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  {% elif 'Dinner' in activity or 'Lunch' in activity or 'Breakfast' in activity %}
+                    <svg class="activity-icon" fill="#667eea" viewBox="0 0 24 24" width="20" height="20">
+                      <path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.20-1.10-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/>
+                    </svg>
+                  {% elif 'Return' in activity %}
+                    <svg class="activity-icon" fill="#667eea" viewBox="0 0 24 24" width="20" height="20">
+                      <path d="M19 7v4H5.83l3.58-3.59L8 6l-6 6 6 6 1.41-1.41L5.83 13H21V7z"/>
+                    </svg>
+                  {% else %}
+                    <svg class="activity-icon" fill="#667eea" viewBox="0 0 24 24" width="20" height="20">
+                      <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                  {% endif %}
+                  
+                  <div class="activity-content">
+                    {% if time_part %}
+                      <div class="activity-time">{{ time_part }}</div>
+                    {% endif %}
+                    <div class="activity-description">{{ description_part }}</div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+
+      {% else %}
+        <div class="no-itinerary">
+          <p>🧳 No itinerary available yet. Use the planning form to generate your perfect trip!</p>
+        </div>
+      {% endif %}
+    </section>
   </div>
+
 </div>
-
-<!-- STYLES -->
-<style>
-  body {
-    background-color: #f9f9f9;
-    margin: 0;
-    font-family: sans-serif;
-  }
-  .page-wrapper {
-    position: relative;
-    height: 100vh;
-    padding-bottom: 100px;
-    overflow-y: auto;
-  }
-  .center-card-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(100% - 100px);
-    padding: 20px;
-  }
-  .card {
-    width: 100%;
-    max-width: 900px;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    background: white;
-  }
-
-  /* LANDSCAPE SECTION */
-  .landscape-section {
-    position: relative;
-    height: 280px;
-    background: linear-gradient(to top, #a0d2eb, #e0f7fa);
-    overflow: hidden;
-  }
-  .sun {
-    position: absolute;
-    top: 40px;
-    left: 50%;
-    width: 80px;
-    height: 80px;
-    margin-left: -40px;
-    background: #FFD700;
-    border-radius: 50%;
-  }
-  .hill-1, .hill-2, .hill-3, .hill-4 {
-    position: absolute;
-    bottom: 0;
-    background: #4caf50;
-    border-radius: 50% 50% 0 0;
-  }
-  .hill-1 { left: 0; width: 60%; height: 120px; background: #6bbf59; }
-  .hill-2 { right: 0; width: 50%; height: 100px; background: #519e4d; }
-  .hill-3 { left: 20%; width: 40%; height: 80px; background: #4e944f; z-index: 2; }
-  .hill-4 { left: 60%; width: 30%; height: 60px; background: #3e7a3d; z-index: 1; }
-
-  .ocean {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 40px;
-    background: #40c4ff;
-  }
-  .reflection {
-    width: 10px; height: 10px;
-    background: rgba(255,255,255,0.4);
-    position: absolute;
-    bottom: 10px;
-    border-radius: 50%;
-  }
-  .reflection:nth-child(1) { left: 10%; }
-  .reflection:nth-child(2) { left: 30%; }
-  .reflection:nth-child(3) { left: 50%; }
-  .reflection:nth-child(4) { left: 70%; }
-  .reflection:nth-child(5) { left: 90%; }
-
-  .tree-1, .tree-2, .tree-3 {
-    position: absolute;
-    bottom: 40px;
-  }
-  .tree-1 { left: 10%; }
-  .tree-2 { left: 20%; }
-  .tree-3 { left: 80%; }
-
-  /* CONTENT SECTION */
-  .content-section {
-    padding: 20px;
-  }
-  .weather-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #2a2a2a;
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-  }
-  .left-side p, .right-side p, .location span {
-    margin: 0;
-  }
-  .location {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
-  }
-  .temperature {
-    font-size: 24px;
-    font-weight: bold;
-  }
-
-  .forecast {
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    text-align: center;
-  }
-  .separator {
-    width: 1px;
-    height: 50px;
-    background-color: #ccc;
-  }
-
-  /* MESSAGE BOX */
-  .messageBox {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 900px;
-    background-color: #f0f0f0;
-    padding: 10px 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    z-index: 1000;
-  }
-  .fileUploadWrapper input[type="file"] {
-    display: none;
-  }
-  .fileUploadWrapper label {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-  }
-  .tooltip {
-    font-size: 12px;
-    margin-left: 6px;
-    color: #6c6c6c;
-  }
-  #messageInput {
-    flex-grow: 1;
-    padding: 10px 15px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    font-size: 16px;
-    outline: none;
-  }
-  #sendButton {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #007bff;
-    border: none;
-    color: white;
-    padding: 10px 16px;
-    border-radius: 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  #sendButton:hover {
-    background-color: #0056b3;
-  }
-/* Animated fade-in for each day */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.fade-in-up {
-  animation: fadeUp 0.6s ease-out both;
-}
-
-/* Itinerary Grouping */
-.itinerary-grouped {
-  max-width: 850px;
-  margin: 0 auto;
-  padding: 30px;
-  background-color: #fafafa;
-  border-radius: 10px;
-}
-
-/* Each day card */
-.day-block {
-  background-color: #ffffff;
-  margin-bottom: 24px;
-  padding: 24px;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease;
-}
-.day-block:hover {
-  transform: translateY(-4px);
-}
-
-/* Day header */
-.day-header h3 {
-  margin-bottom: 6px;
-}
-.underline-accent {
-  width: 60px;
-  height: 4px;
-  background: linear-gradient(to right, #60A5FA, #3B82F6);
-  border-radius: 2px;
-  margin-bottom: 16px;
-}
-
-/* Activity List */
-.activity-list {
-  list-style: none;
-  padding-left: 0;
-}
-.activity-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 12px;
-  font-size: 0.95rem;
-  color: #374151;
-  line-height: 1.4;
-}
-.activity-icon {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-</style>
 {% endblock %}
