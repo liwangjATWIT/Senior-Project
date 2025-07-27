@@ -59,18 +59,7 @@
           </div>
         </div>
 
-        <!-- Mobile dropdown -->
-        <div id="mobile-menu" class="lg:hidden hidden px-4 pb-4 space-y-2 bg-blue-500">
-          {% if session.get('user') %}
-            <a href="{{ url_for('views.home') }}" class="block hover:text-blue-100 transition">Home</a>
-            <a href="{{ url_for('auth.dashboard') }}" class="block hover:text-blue-100 transition">Dashboard</a>
-            <a href="{{ url_for('auth.logout') }}" class="block hover:text-blue-100 transition">Log Out</a>
-          {% else %}
-            <a href="{{ url_for('auth.login') }}" class="block hover:text-blue-100 transition">Log In</a>
-            <a href="{{ url_for('auth.sign_up') }}" class="block hover:text-blue-100 transition">Sign Up</a>
-          {% endif %}
-        </div>
-
+        
         <!-- Toggle Script -->
         <script>
           document.getElementById("menu-toggle").addEventListener("click", function () {

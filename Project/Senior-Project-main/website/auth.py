@@ -254,10 +254,13 @@ def dashboard():
         destination = request.form.get('destination')
         departure_date = request.form.get('departureDate')
         return_date = request.form.get('returnDate')
+        days = request.form.get('days', 3)  # Default to 3 days if not selected
 
         if origin and destination and departure_date and return_date:
             itinerary = generate_itinerary(origin, destination, departure_date, return_date)
             session['itinerary'] = itinerary
+            session['destination'] = destination
+            session['days'] = int(days)
             flash("Itinerary generated successfully!", category="success")
             return redirect(url_for('views.home'))
         else:
@@ -265,10 +268,14 @@ def dashboard():
 
     return render_template("dashboard.html", user=user)
 
+
 @auth.route('/home')
 def home():
     user = session.get('user')
     if not user:
         return redirect(url_for('views.home'))
 
-    return render_template('auth_home.html', user=user)
+    destination = session.get('destination', 'New York, NY')  # default if not set
+    days = session.get('days', 3)  # default to 3 days
+
+    return render_template('auth_home.html', user=user, destination=destination, days=days)

@@ -14,7 +14,8 @@
   }
 
   .main-container {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #020024;
+    background: linear-gradient(171deg,rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
@@ -309,7 +310,8 @@
   .separator {
     width: 2px;
     height: 50px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #020024;
+    background: linear-gradient(171deg,rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
     border-radius: 1px;
     opacity: 0.3;
   }
@@ -390,7 +392,8 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2, #ffd700);
+    background: #020024;
+    background: linear-gradient(171deg,rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
   }
 
   .day-card:hover {
@@ -611,35 +614,241 @@
       </section>
 
       <!-- Weather and Forecast Info -->
-      <section class="weather-info-section">
-        <div class="weather-info">
-          <div class="left-side">
-            <svg stroke="#fff" fill="none" viewBox="0 0 24 24" stroke-width="1.5" width="40" height="40">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 0 1 4-4h1a4 4 0 0 1 4-4 4 4 0 0 1 4 4h1a4 4 0 0 1 0 8H7a4 4 0 0 1-4-4Z"/>
-            </svg>
-            <p>Cloudy</p>
-          </div>
-          <div class="right-side">
-            <div class="location">
-              <svg fill="#fff" viewBox="0 0 64 64" width="20" height="20">
-                <path d="M32,0C18.746,0,8,10.746,8,24c0,5.219,1.711,10.008,4.555,13.93…"/>
-              </svg>
-              <span>Spain</span>
-            </div>
-            <p>Monday, 4th May</p>
-            <p class="temperature">24°C</p>
-          </div>
-        </div>
-
-        <div class="forecast">
-          <div><p>Tuesday, 5th May</p><p><strong>24°C</strong></p></div>
-          <div class="separator"></div>
-          <div><p>Wednesday, 6th May</p><p><strong>26°C</strong></p></div>
-          <div class="separator"></div>
-          <div><p>Thursday, 7th May</p><p><strong>22°C</strong></p></div>
-        </div>
-      </section>
+<section class="weather-info-section">
+  <div class="weather-info">
+    <div class="left-side">
+      <svg stroke="#fff" fill="none" viewBox="0 0 24 24" stroke-width="1.5" width="40" height="40">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 15a4 4 0 0 1 4-4h1a4 4 0 0 1 4-4 4 4 0 0 1 4 4h1a4 4 0 0 1 0 8H7a4 4 0 0 1-4-4Z"/>
+      </svg>
+      <p id="weather-description">Loading...</p>
     </div>
+    <div class="right-side">
+      <div class="location">
+        <svg fill="#fff" viewBox="0 0 64 64" width="20" height="20">
+          <path d="M32,0C18.746,0,8,10.746,8,24c0,5.219,1.711,10.008,4.555,13.93…"/>
+        </svg>
+        <span id="location-name">Loading...</span>
+      </div>
+      <p id="today-date">Loading...</p>
+      <p class="temperature" id="temperature">--°C</p>
+    </div>
+  </div>
+
+  <div class="forecast" id="forecast-container">
+    <!-- JS will inject forecasts -->
+  </div>
+</section>
+
+<script>
+  const destination = "{{ destination if destination else 'New York, NY' }}";
+  const departureDate = "{{ departure_date if departure_date else '' }}";
+  const returnDate = "{{ return_date if return_date else '' }}";
+  const GEOCODE_API_KEY = "AIzaSyBvhCXdJ2pRT86oQbh5QaFS-BUCg3Aa9Qk";
+  const WEATHER_API_KEY = "AIzaSyBvhCXdJ2pRT86oQbh5QaFS-BUCg3Aa9Qk";
+
+  console.log("Debug Info:");
+  console.log("Destination:", destination);
+  console.log("Departure:", departureDate);
+  console.log("Return:", returnDate);
+
+  // Calculate number of days for the trip
+  function calculateTripDays() {
+    if (!departureDate || !returnDate) {
+      console.log("No dates provided, defaulting to 7 days");
+      return 7;
+    }
+    
+    const start = new Date(departureDate);
+    const end = new Date(returnDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    const finalDays = Math.min(diffDays, 14);
+    console.log(`Trip duration: ${finalDays} days`);
+    return finalDays;
+  }
+
+  async function loadWeather() {
+    try {
+      console.log("Starting weather load...");
+      const tripDays = calculateTripDays();
+      
+      // Step 1: Get lat/lon from city
+      console.log("Step 1: Geocoding...");
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(destination)}&key=${GEOCODE_API_KEY}`;
+      
+      const geoRes = await fetch(geocodeUrl);
+      const geoData = await geoRes.json();
+      
+      console.log("Geocode response status:", geoData.status);
+      
+      if (geoData.status !== 'OK' || !geoData.results || geoData.results.length === 0) {
+        throw new Error(`Geocoding failed: ${geoData.status} - ${geoData.error_message || 'Unknown error'}`);
+      }
+
+      const location = geoData.results[0].geometry.location;
+      const lat = location.lat;
+      const lon = location.lng;
+      console.log(`Coordinates: ${lat}, ${lon}`);
+
+      // Step 2: Fetch weather data
+      console.log("Step 2: Fetching weather...");
+      const forecastUrl = `https://weather.googleapis.com/v1/forecast/days:lookup?key=${WEATHER_API_KEY}&location.latitude=${lat}&location.longitude=${lon}&days=${tripDays}`;
+      console.log("Weather URL:", forecastUrl);
+      
+      const weatherRes = await fetch(forecastUrl);
+      console.log("Weather response status:", weatherRes.status);
+      
+      if (!weatherRes.ok) {
+        const errorText = await weatherRes.text();
+        console.error("Weather API error response:", errorText);
+        throw new Error(`Weather API Error: ${weatherRes.status} - ${errorText}`);
+      }
+      
+      const weatherData = await weatherRes.json();
+      console.log("Weather data received:", weatherData);
+      
+      if (!weatherData.forecastDays || weatherData.forecastDays.length === 0) {
+        throw new Error("No weather forecast data returned");
+      }
+
+      // Step 3: Update UI with today's weather
+      console.log("Step 3: Updating UI...");
+      const today = weatherData.forecastDays[0];
+      console.log("Today's data:", today);
+
+      // Get weather description from daytime forecast
+      let description = "Clear";
+      if (today.daytimeForecast && today.daytimeForecast.weatherCondition && today.daytimeForecast.weatherCondition.description) {
+        description = today.daytimeForecast.weatherCondition.description.text;
+      }
+
+      // Get temperature from maxTemperature
+      let temperature = 20; // Default temperature
+      if (today.maxTemperature && typeof today.maxTemperature.degrees === 'number') {
+        temperature = today.maxTemperature.degrees;
+      }
+
+      console.log(`Setting weather: ${description}, ${temperature}°C`);
+
+      // Update the UI elements
+      document.getElementById("weather-description").textContent = description;
+      document.getElementById("temperature").textContent = `${Math.round(temperature)}°C`;
+      document.getElementById("location-name").textContent = destination;
+      document.getElementById("today-date").textContent = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', day: 'numeric', month: 'long'
+      });
+
+      // Step 4: Display forecast for remaining days
+      const forecastContainer = document.getElementById("forecast-container");
+      forecastContainer.innerHTML = "";
+
+      if (weatherData.forecastDays.length > 1) {
+        console.log("Processing forecast days...");
+        
+        weatherData.forecastDays.slice(1).forEach((day, index) => {
+          console.log(`Processing day ${index + 2}:`, day);
+          
+          // Get date from displayDate object
+          const displayDate = day.displayDate;
+          const dayDate = new Date(displayDate.year, displayDate.month - 1, displayDate.day);
+          const formatted = dayDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            day: 'numeric',
+            month: 'short'
+          });
+          
+          // Get max temperature
+          let dayTemp = 20;
+          if (day.maxTemperature && typeof day.maxTemperature.degrees === 'number') {
+            dayTemp = day.maxTemperature.degrees;
+          }
+
+          // Get min temperature
+          let minTemp = 15;
+          if (day.minTemperature && typeof day.minTemperature.degrees === 'number') {
+            minTemp = day.minTemperature.degrees;
+          }
+
+          // Get weather condition from daytime forecast
+          let condition = "Clear";
+          if (day.daytimeForecast && day.daytimeForecast.weatherCondition && day.daytimeForecast.weatherCondition.description) {
+            condition = day.daytimeForecast.weatherCondition.description.text;
+          }
+
+          // Map weather condition to appropriate icon
+          let weatherIcon = "☀️";
+          const conditionLower = condition.toLowerCase();
+          if (conditionLower.includes('rain') || conditionLower.includes('shower') || conditionLower.includes('drizzle')) {
+            weatherIcon = "🌧️";
+          } else if (conditionLower.includes('cloud')) {
+            weatherIcon = "☁️";
+          } else if (conditionLower.includes('partly')) {
+            weatherIcon = "⛅";
+          } else if (conditionLower.includes('snow')) {
+            weatherIcon = "❄️";
+          } else if (conditionLower.includes('thunder') || conditionLower.includes('storm')) {
+            weatherIcon = "⛈️";
+          } else if (conditionLower.includes('clear') || conditionLower.includes('sunny')) {
+            weatherIcon = "☀️";
+          }
+          
+          console.log(`Day ${index + 2}: ${formatted}, ${condition}, ${Math.round(dayTemp)}°C/${Math.round(minTemp)}°C, Icon: ${weatherIcon}`);
+          
+          const forecastHTML = `
+            <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 12px; margin: 0.5rem; min-width: 120px; flex: 1; max-width: 150px;">
+              <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #374151; font-size: 0.9rem;">${formatted}</p>
+              <div style="font-size: 1.8rem; margin: 0.5rem 0;">${weatherIcon}</div>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #64748b; line-height: 1.2;">${condition}</p>
+              <p style="margin: 0.25rem 0 0 0; font-size: 1rem;"><strong>${Math.round(dayTemp)}°C</strong></p>
+              <p style="margin: 0; font-size: 0.75rem; color: #9CA3AF;">Low: ${Math.round(minTemp)}°C</p>
+            </div>
+          `;
+          
+          forecastContainer.innerHTML += forecastHTML;
+        });
+
+        // Style the forecast container for better display
+        forecastContainer.style.display = 'flex';
+        forecastContainer.style.justifyContent = 'space-around';
+        forecastContainer.style.alignItems = 'stretch';
+        forecastContainer.style.flexWrap = 'wrap';
+        forecastContainer.style.gap = '0.5rem';
+        forecastContainer.style.padding = '0.5rem';
+        
+      } else {
+        forecastContainer.innerHTML = '<div style="text-align: center; color: #64748b;">Extended forecast unavailable</div>';
+      }
+
+      console.log("Weather loading completed successfully!");
+      
+    } catch (err) {
+      console.error("Weather load failed:", err);
+      
+      // Provide fallback weather data
+      document.getElementById("weather-description").textContent = "Weather unavailable";
+      document.getElementById("temperature").textContent = "--°C";
+      document.getElementById("location-name").textContent = destination;
+      document.getElementById("today-date").textContent = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', day: 'numeric', month: 'long'
+      });
+      
+      // Show error message in forecast
+      const forecastContainer = document.getElementById("forecast-container");
+      forecastContainer.innerHTML = `
+        <div style="text-align: center; color: #ef4444; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 12px;">
+          <p style="margin: 0 0 0.5rem 0; font-weight: 600;">Weather forecast unavailable</p>
+          <p style="font-size: 0.8rem; margin: 0; opacity: 0.8;">Error: ${err.message}</p>
+        </div>
+      `;
+    }
+  }
+
+  // Load weather when page loads
+  console.log("Initializing weather load...");
+  loadWeather();
+</script>
+
 
     <!-- Itinerary Section -->
     <section class="itinerary-section">
