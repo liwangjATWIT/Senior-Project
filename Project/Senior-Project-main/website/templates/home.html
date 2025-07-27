@@ -1,7 +1,9 @@
+
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 
 {% block content %}
+
 <style>
   * {
     box-sizing: border-box;
@@ -644,8 +646,8 @@
   const destination = "{{ destination if destination else 'New York, NY' }}";
   const departureDate = "{{ departure_date if departure_date else '' }}";
   const returnDate = "{{ return_date if return_date else '' }}";
-  const GEOCODE_API_KEY = "AIzaSyBvhCXdJ2pRT86oQbh5QaFS-BUCg3Aa9Qk";
-  const WEATHER_API_KEY = "AIzaSyBvhCXdJ2pRT86oQbh5QaFS-BUCg3Aa9Qk";
+  const GEOCODE_API_KEY = "{{ geocode_api_key }}";
+  const WEATHER_API_KEY = "{{ weather_api_key }}";
 
   console.log("Debug Info:");
   console.log("Destination:", destination);

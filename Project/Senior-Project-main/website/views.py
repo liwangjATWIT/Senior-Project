@@ -1,4 +1,5 @@
 from flask import Blueprint as bl, render_template, session, redirect, url_for, flash
+import os
 
 views = bl('views', __name__)
 
@@ -17,6 +18,8 @@ def home():
     return_date = session.get('return_date', '')
     
     return render_template('home.html', 
+                        geocode_api_key=os.getenv('GEOCODE_API_KEY'),
+                         weather_api_key=os.getenv('WEATHER_API_KEY'),
                          user=user, 
                          itinerary=itinerary,
                          destination=destination,
